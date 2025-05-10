@@ -23,7 +23,7 @@ RUN python3 -m venv /app/app/backend/.venv \
     && /app/app/backend/.venv/bin/pip install --no-cache-dir -r /app/app/backend/requirements.txt
 
 # Copy frontend build output from previous stage into backend's static folder
-COPY --from=frontend /app/app/frontend/build/ /app/app/backend/static/
+# COPY --from=frontend /app/app/frontend/build/ /app/app/backend/static/
 
 # Expose port
 EXPOSE 3000
