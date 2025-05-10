@@ -1,32 +1,39 @@
-# Step 1: Build React frontend
-FROM node:18 AS frontend
+# --- Stage 1: Build React Frontend ---
+    FROM node:18 AS frontend
 
-WORKDIR /app/app/frontend
-COPY app/frontend/ ./
-
-RUN npm install
-RUN npm run build
-
-# Step 2: Python backend
-FROM python:3.10 AS backend
-
-WORKDIR /app
-
-# Copy backend files first
-COPY app/backend/ ./app/backend/
-
-# Set Python path
-ENV PYTHONPATH="${PYTHONPATH}:/app/app/backend"
-
-# Create virtual environment and install dependencies
-RUN python3 -m venv /app/app/backend/.venv \
-    && /app/app/backend/.venv/bin/pip install --no-cache-dir -r /app/app/backend/requirements.txt
-
-# Copy frontend build output from previous stage into backend's static folder
-# COPY --from=frontend /app/app/frontend/build/ /app/app/backend/static/
-
-# Expose port
-EXPOSE 3000
-
-# Run backend
-CMD ["/app/app/backend/.venv/bin/python", "-m", "quart", "--app", "app.backend.main:app", "run", "--port", "3000", "--host", "0.0.0.0", "--reload"]
+    WORKDIR /frontend
+    COPY app/frontend/ ./
+    RUN npm install
+    RUN npm run build
+    
+    # --- Stage 2: Python Backend with Frontend Output ---
+    FROM python:3.10
+    
+    # Set working directory
+    WORKDIR /app
+    
+    # Set PYTHONPATH so Python finds the app correctly
+    ENV PYTHONPATH="/app"
+    
+    # Install system dependency for ODBC issue (optional; if you're using pyodbc)
+    RUN apt-get update && apt-get install -y libodbc1
+    
+    # Copy backend
+    COPY app/backend/ ./backend
+    
+    # Copy React build output into backend/static
+    # COPY --from=frontend /frontend/build ./backend/static
+    
+    # Create virtual environment
+    RUN python -m venv /app/backend/.venv
+    
+    # Install Python deps
+    RUN /app/backend/.venv/bin/pip install --upgrade pip && \
+        /app/backend/.venv/bin/pip install -r backend/requirements.txt
+    
+    # Expose port
+    EXPOSE 3000
+    
+    # Start the app
+    CMD ["/app/backend/.venv/bin/python", "-m", "quart", "--app", "backend.main:app", "run", "--port", "3000", "--host", "0.0.0.0"]
+    
