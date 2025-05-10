@@ -16,6 +16,7 @@
     # Copy backend code
     COPY app/backend/ ./backend
     
+
     # Create virtual environment
     RUN python -m venv /app/backend/.venv
     
@@ -23,8 +24,6 @@
     RUN /app/backend/.venv/bin/pip install --upgrade pip && \
         /app/backend/.venv/bin/pip install -r backend/requirements.txt
     
-    COPY --from=frontend /app/app/frontend/dist/ /app/app/backend/static/
-
     # Expose backend port
     EXPOSE 3000
     
