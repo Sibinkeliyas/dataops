@@ -27,8 +27,6 @@ RUN npm run build
 FROM backend
 
 # Copy the built frontend files (moved to backend/static via Vite) into the backend's static folder
-COPY --from=frontend /app/frontend/build/ ./app/backend/static/
-
 # Expose the port the backend will run on
 EXPOSE 3000
 
