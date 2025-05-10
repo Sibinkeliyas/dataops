@@ -8,7 +8,7 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   build: {
     target: "esnext",
-    outDir: "../backend/static",
+    // outDir: "../backend/static",
     emptyOutDir: true,
     sourcemap: false,
   },
