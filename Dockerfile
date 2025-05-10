@@ -1,24 +1,31 @@
-# Step 1: Build React frontend
-FROM node:18 AS frontend
+# --- Stage 1: Build React Frontend ---
+    FROM node:18 AS frontend
 
-WORKDIR /app/frontend
-COPY app/frontend/ .
-
-RUN npm install
-RUN npm run build
-
-# Step 2: Python backend with built frontend
-FROM python:3.10
-
-WORKDIR /app
-
-# Copy backend code
-COPY app/backend/ ./backend
-
-
-
-# Expose port
-EXPOSE 3000
-
-# Run backend (should serve static files from /static)
-CMD ["python", "-m", "quart", "--app", "backend/main:app", "run", "--port", "3000", "--host", "0.0.0.0", "--reload"]
+    WORKDIR /app/frontend
+    COPY app/frontend/ .
+    
+    RUN npm install
+    RUN npm run build
+    
+    # --- Stage 2: Build Python Backend with Frontend Output ---
+    FROM python:3.10
+    
+    # Set work directory
+    WORKDIR /app
+    
+    # Copy backend code
+    COPY app/backend/ ./backend
+    
+    # Create virtual environment
+    RUN python -m venv /app/backend/.venv
+    
+    # Install dependencies using venv
+    RUN /app/backend/.venv/bin/pip install --upgrade pip && \
+        /app/backend/.venv/bin/pip install -r backend/requirements.txt
+    
+    # Expose backend port
+    EXPOSE 3000
+    
+    # Run the app with the venv python interpreter
+    CMD ["/app/backend/.venv/bin/python", "-m", "quart", "--app", "backend/main:app", "run", "--port", "3000", "--host", "0.0.0.0"]
+    
