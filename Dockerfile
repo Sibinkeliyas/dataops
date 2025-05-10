@@ -2,31 +2,34 @@
     FROM node:18 AS frontend
 
     WORKDIR /app/frontend
-    COPY app/frontend/ .
+    COPY app/frontend/ ./
     
     RUN npm install
     RUN npm run build
     
-    # --- Stage 2: Build Python Backend with Frontend Output ---
+    # --- Stage 2: Python Backend ---
     FROM python:3.10
     
     # Set work directory
     WORKDIR /app
     
-    # Copy backend code
-    COPY app/backend/ ./backend
+    # Set PYTHONPATH to make `app` package discoverable
+    ENV PYTHONPATH="/app"
     
-
+    # Copy backend code (includes app/backend)
+    COPY app/ ./app
+    
+    
     # Create virtual environment
-    RUN python -m venv /app/backend/.venv
+    RUN python -m venv /app/app/backend/.venv
     
-    # Install dependencies using venv
-    RUN /app/backend/.venv/bin/pip install --upgrade pip && \
-        /app/backend/.venv/bin/pip install -r backend/requirements.txt
+    # Install backend dependencies
+    RUN /app/app/backend/.venv/bin/pip install --upgrade pip && \
+        /app/app/backend/.venv/bin/pip install -r app/backend/requirements.txt
     
-    # Expose backend port
+    # Expose the backend port
     EXPOSE 3000
     
-    # Run the app with the venv python interpreter
-    CMD ["/app/backend/.venv/bin/python", "-m", "quart", "--app", "backend/main:app", "run", "--port", "3000", "--host", "0.0.0.0"]
+    # Run the backend app
+    CMD ["/app/app/backend/.venv/bin/python", "-m", "quart", "--app", "app.backend.main:app", "run", "--port", "3000", "--host", "0.0.0.0"]
     
