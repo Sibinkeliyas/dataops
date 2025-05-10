@@ -15,11 +15,7 @@ WORKDIR /app
 # Copy backend code
 COPY app/backend/ ./backend
 
-# Copy built frontend into backend/static
-COPY --from=frontend /app/frontend/build ./backend/static
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r backend/requirements.txt
 
 # Expose port
 EXPOSE 3000
